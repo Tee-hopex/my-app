@@ -17,7 +17,7 @@ route.get('/all_user', async(req, res) => {
 })
 
 //  endpoint for user to signup323
-route.post('/sign_up', async (req, res) => {
+route.post('/sign_up', uploader.single("image"), async (req, res) => {
     const { password, username, email, phone_no, address } = req.body; // Destructuring the request body
 
     // Checking if any required field is missing
@@ -31,6 +31,15 @@ route.post('/sign_up', async (req, res) => {
         if (found)
             return res.status(400).send({ status: 'error', msg: `User with this username: ${username} already exists` });
 
+            let img_url, img_id;
+            // check if image was sent in and upload to cloudinary
+            if(req.file) {
+                // folder is used to specify the folder name you want the image to be saved in
+                const {secure_url, public_id} = await cloudinary.uploader.upload(req.file.path, {folder: 'profile-images'});
+                img_url = secure_url;
+                img_id = public_id;
+            }
+            
         // create user document
         const user = new User();
         user.username = username;
